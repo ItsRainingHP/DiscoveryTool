@@ -1,0 +1,10 @@
+services:
+  discoverytool:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      no_cache: true
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: "8000"
