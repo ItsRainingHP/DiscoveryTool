@@ -78,6 +78,25 @@ textarea {
   min-width: min(100%, 320px);
 }
 
+.tool-card__header {
+  display: grid;
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px 20px;
+}
+
+.tool-card__status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  justify-self: end;
+  gap: 0.5rem;
+  min-width: 6.5rem;
+  white-space: nowrap;
+  text-align: right;
+}
+
 .tool-card,
 .surface-card {
   width: 100%;
@@ -95,6 +114,11 @@ textarea {
 .warning-list,
 .stats-list {
   margin: 0;
+}
+
+.tool-card__action {
+  width: min(100%, 28rem);
+  max-width: 100%;
 }
 
 .uploader-input {
@@ -340,6 +364,17 @@ textarea {
 @media (max-width: 720px) {
   .page-frame {
     width: min(100%, calc(100vw - 32px));
+  }
+
+  .tool-card__header {
+    grid-template-columns: 1fr;
+  }
+
+  .tool-card__status {
+    justify-content: flex-start;
+    justify-self: start;
+    min-width: 0;
+    text-align: left;
   }
 
   .preview-header {

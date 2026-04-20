@@ -9,31 +9,32 @@ type ToolCardProps = {
   description: string;
   status: string;
   actionLabel: string;
-  accent: "cyan" | "yellow";
 };
 
-function ToolCard({ href, title, description, status, actionLabel, accent }: ToolCardProps) {
+const READY_ACCENT = "cyan" as const;
+
+function ToolCard({ href, title, description, status, actionLabel }: ToolCardProps) {
   return (
     <Card className="tool-card" fillWidth fillHeight padding="24" radius="xl">
-      <Column fillHeight gap="20">
-        <Row horizontal="between" vertical="center" gap="12" wrap>
+      <Column fillWidth fillHeight gap="20">
+        <div className="tool-card__header">
           <MetaBadge label="Tool" value={title} />
-          <Row vertical="center" gap="8">
-            <StatusIndicator color={accent} ariaLabel={status} />
+          <div className="tool-card__status">
+            <StatusIndicator color={READY_ACCENT} ariaLabel={status} />
             <Text size="s" weight="strong">
               {status}
             </Text>
-          </Row>
-        </Row>
+          </div>
+        </div>
 
-        <Column gap="12" flex="1">
+        <Column fillWidth gap="12" flex="1">
           <Heading as="h2" size="l" weight="strong">
             {title}
           </Heading>
           <Text as="p">{description}</Text>
         </Column>
 
-        <Button href={href} fillWidth>
+        <Button className="tool-card__action" href={href}>
           {actionLabel}
         </Button>
       </Column>
@@ -58,7 +59,6 @@ export function ToolDashboard() {
             description="Upload a tagged production CSV, preview the converted RFP and ROG sections, and download the generated TXT file."
             status="Ready"
             actionLabel="Open converter"
-            accent="cyan"
           />
           <ToolCard
             href="/tools/privilege-log/"
@@ -66,7 +66,6 @@ export function ToolDashboard() {
             description="Upload a privilege CSV, preview the reordered output, and download the review-ready CSV file."
             status="Ready"
             actionLabel="Open converter"
-            accent="yellow"
           />
         </Row>
       </Column>
