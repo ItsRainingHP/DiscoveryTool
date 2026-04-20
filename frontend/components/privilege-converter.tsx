@@ -243,6 +243,13 @@ export function PrivilegeConverter() {
               </Text>
 
               {result ? (
+                <Text as="p" className="csv-preview-warning" role="alert">
+                  Review this privilege log and redact any privileged names before using or sharing
+                  it.
+                </Text>
+              ) : null}
+
+              {result ? (
                 <CsvPreviewTable headers={result.headers} rows={result.rows} />
               ) : (
                 <div className="csv-preview-empty" role="status">

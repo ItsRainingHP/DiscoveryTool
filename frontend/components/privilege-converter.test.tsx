@@ -93,6 +93,11 @@ describe("PrivilegeConverter", () => {
     await screen.findByText("Conversion summary");
     expect(screen.getByText("Conversion warnings")).toBeInTheDocument();
     expect(screen.getByText(mockResponse.warnings[0])).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Review this privilege log and redact any privileged names before using or sharing it."
+      )
+    ).toBeInTheDocument();
     expect(screen.getByRole("table", { name: "Preview CSV" })).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: "Beginning No." })).toBeInTheDocument();
     expect(screen.getByRole("cell", { name: "Alpha Subject" })).toBeInTheDocument();
