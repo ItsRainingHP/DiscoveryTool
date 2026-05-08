@@ -113,6 +113,36 @@ def test_convert_privilege_endpoint_rejects_invalid_row_state() -> None:
     assert "must have exactly one" in response.json()["detail"]
 
 
+def test_convert_privilege_endpoint_rejects_empty_file() -> None:
+    response = client.post(
+        "/api/privilege/convert",
+        files={"file": ("empty.csv", b"", "text/csv")},
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "The uploaded CSV is empty."
+
+
+def test_convert_endpoint_rejects_csv_with_no_tag_columns() -> None:
+    response = client.post(
+        "/api/rfp/convert",
+        files={"file": ("notags.csv", b"Begin,End,Notes\nEXAMPLE_000001,EXAMPLE_000001,whatever\n", "text/csv")},
+    )
+
+    assert response.status_code == 400
+    assert "tag columns" in response.json()["detail"]
+
+
+def test_convert_endpoint_rejects_csv_with_too_few_columns() -> None:
+    response = client.post(
+        "/api/rfp/convert",
+        files={"file": ("two.csv", b"Begin,End\nEXAMPLE_000001,EXAMPLE_000001\n", "text/csv")},
+    )
+
+    assert response.status_code == 400
+    assert "at least three columns" in response.json()["detail"]
+
+
 def test_convert_privilege_endpoint_rejects_missing_reason_with_row_bates_context() -> None:
     csv_bytes = (
         b"Begin Bates num from 2026-03-20 Production,End Bates num from 2026-03-20 Production,"
