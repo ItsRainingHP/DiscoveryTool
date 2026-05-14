@@ -5,6 +5,8 @@ __pycache__/
 .venv/
 venv/
 
+/examples/local/
+
 node_modules/
 .next/
 frontend/out/

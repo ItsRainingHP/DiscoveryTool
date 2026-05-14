@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from app.models import ConversionResponse, ConversionStats, SectionResult
+from app.services.bates import render_compact_range_end
 
 HEADER_PATTERN = re.compile(r"\b(?P<label>(?:RFP|ROG)\s*(?P<number>\d+))\b", re.IGNORECASE)
 BATES_PATTERN = re.compile(r"^(?P<prefix>.+?)_(?P<number>\d+)$")
@@ -69,7 +70,7 @@ def render_interval(interval: BatesInterval) -> str:
     if interval.start_number == interval.end_number:
         return interval.start_token
 
-    end_tail = str(interval.end_number).zfill(interval.end_width)[-min(4, interval.end_width) :]
+    end_tail = render_compact_range_end(interval.end_number, interval.end_width)
     return f"{interval.start_token}-{end_tail}"
 
 

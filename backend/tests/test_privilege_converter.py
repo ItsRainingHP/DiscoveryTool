@@ -167,6 +167,30 @@ def test_normalize_bates_token_preserves_existing_underscore() -> None:
     assert warnings == []
 
 
+@pytest.mark.parametrize(
+    "value,expected",
+    [
+        ("PRIV010000", "PRIV_010000"),
+        ("PRIV_010000", "PRIV_010000"),
+        ("PRIV_000000001", "PRIV_000000001"),
+    ],
+)
+def test_normalize_bates_token_preserves_five_to_nine_digit_values(value: str, expected: str) -> None:
+    warnings: list[str] = []
+    assert normalize_bates_token(value, row_number=2, column_label="Beginning", warnings=warnings) == expected
+    assert warnings == []
+
+
+def test_convert_csv_bytes_keeps_full_normalized_bates_values() -> None:
+    csv_text = """Begin Bates num from 2026-03-20 Production,End Bates num from 2026-03-20 Production,Document Date,File Name,Email Subject,Email From,Email To,Email CC,Email BCC,Tag: Privilege - Redact,Tag: Privilege - Withhold,Tag: AC-WP
+PRIV010000,PRIV_000000001,1/24/2025,alpha.msg,Alpha Subject,Author One,To One,,,TRUE,,TRUE
+"""
+    result = convert_csv_bytes("sample.csv", csv_text.encode("utf-8"))
+
+    assert result.rows[0][:2] == ["PRIV_010000", "PRIV_000000001"]
+    assert "PRIV_010000,PRIV_000000001" in result.csvText
+
+
 def test_normalize_bates_token_warns_on_blank() -> None:
     warnings: list[str] = []
     assert (

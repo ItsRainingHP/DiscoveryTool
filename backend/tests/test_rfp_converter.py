@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from app.services.bates import render_compact_range_end
 from app.services.rfp_converter import (
     ConversionError,
     BatesInterval,
@@ -121,9 +122,37 @@ def test_render_interval_returns_token_for_single_document() -> None:
 
 
 def test_render_interval_truncates_end_to_last_four_digits_for_wide_widths() -> None:
-    # The renderer keeps at most the last 4 digits of the end number when the source width is >= 4.
+    # The renderer keeps the established compact form for ordinary 6-digit ranges.
     interval = BatesInterval("EXAMPLE", 4558, 4561, "EXAMPLE_004558", 6)
     assert render_interval(interval) == "EXAMPLE_004558-4561"
+
+
+@pytest.mark.parametrize(
+    "interval,expected",
+    [
+        (BatesInterval("DIST", 10963, 11042, "DIST_010963", 6), "DIST_010963-11042"),
+        (BatesInterval("DIST", 10963, 13460, "DIST_010963", 6), "DIST_010963-13460"),
+        (BatesInterval("EX", 1, 10000, "EX_000001", 6), "EX_000001-10000"),
+        (BatesInterval("EX", 1, 123456789, "EX_000000001", 9), "EX_000000001-123456789"),
+    ],
+)
+def test_render_interval_preserves_significant_end_digits(interval: BatesInterval, expected: str) -> None:
+    assert render_interval(interval) == expected
+
+
+@pytest.mark.parametrize(
+    "number,source_width,expected",
+    [
+        (5, 6, "0005"),
+        (4561, 6, "4561"),
+        (10000, 6, "10000"),
+        (123456789, 9, "123456789"),
+    ],
+)
+def test_render_compact_range_end_strips_only_leading_zeroes(
+    number: int, source_width: int, expected: str
+) -> None:
+    assert render_compact_range_end(number, source_width) == expected
 
 
 def test_render_interval_pads_short_widths() -> None:
@@ -219,6 +248,24 @@ GAMMA_000005,GAMMA_000003,TRUE
     assert any("after end Bates" in warning for warning in result.warnings)
     assert result.stats.total_rows == 2
     assert result.stats.skipped_rows == 2
+
+
+def test_convert_csv_bytes_preserves_significant_end_digits_in_ranges() -> None:
+    csv_text = """Begin,End,Tag: RFP 01,Tag: RFP 02,Tag: RFP 03,Tag: RFP 04
+DIST_010963,DIST_011042,TRUE,,,
+DIST_010963,DIST_013460,,TRUE,,
+EX_000001,EX_010000,,,TRUE,
+EX_000000001,EX_123456789,,,,TRUE
+"""
+    result = convert_csv_bytes("local-failure-pattern.csv", csv_text.encode("utf-8"))
+
+    assert [section.text for section in result.sections] == [
+        "RFP 01:\nDIST_010963-11042",
+        "RFP 02:\nDIST_010963-13460",
+        "RFP 03:\nEX_000001-10000",
+        "RFP 04:\nEX_000000001-123456789",
+    ]
+    assert result.warnings == []
 
 
 def test_convert_csv_bytes_ignores_blank_rows_and_unflagged_rows() -> None:
